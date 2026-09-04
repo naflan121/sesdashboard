@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Project;
 use App\Repository\EmailRepository;
+use App\Security\SnsRequestValidator;
 use App\Utils\WebHookProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,13 +24,24 @@ class WebHookController extends BaseController
                           EntityManagerInterface $em,
                           EmailRepository $emailRepository,
                           WebHookProcessor $processor,
-                          HttpClientInterface $httpClient)
+                          HttpClientInterface $httpClient,
+                          SnsRequestValidator $snsValidator)
     {
 
         $jsonData = json_decode($request->getContent(), true);
 
-        if ($jsonData === false) {
+        // json_decode() returns null on a malformed body, and a scalar for valid-but-useless
+        // JSON such as `"x"` or `5`.
+        if (!is_array($jsonData)) {
             return new Response('Error', Response::HTTP_BAD_REQUEST);
+        }
+
+        // An SNS envelope is only present when "raw message delivery" is disabled; that is
+        // also the only case in which there is a signature to verify.
+        $isSnsEnvelope = isset($jsonData['SignatureVersion'], $jsonData['Signature']);
+
+        if ($isSnsEnvelope && !$snsValidator->isValid($jsonData)) {
+            return new Response('Invalid SNS signature', Response::HTTP_FORBIDDEN);
         }
 
         // Auto subscribe to SNS topic.
@@ -42,6 +54,20 @@ class WebHookController extends BaseController
                 return new Response('Ok');
             }
             return new Response('Not Ok', Response::HTTP_BAD_REQUEST);
+        }
+
+        // Unwrap the envelope: without raw message delivery the SES event arrives as a
+        // JSON string inside the SNS "Message" field.
+        if (isset($jsonData['Message']) && is_string($jsonData['Message'])) {
+            $jsonData = json_decode($jsonData['Message'], true);
+
+            if (!is_array($jsonData)) {
+                return new Response('Error', Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        if (empty($jsonData['mail']['messageId']) || empty($jsonData['mail']['timestamp'])) {
+            return new Response('Unexpected payload', Response::HTTP_BAD_REQUEST);
         }
 
         // Process mail.
