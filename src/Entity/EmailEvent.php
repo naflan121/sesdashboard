@@ -7,6 +7,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EmailEventRepository")
+ * @ORM\Table(indexes={
+ *     @ORM\Index(name="idx_email_event_timestamp_event", columns={"timestamp", "event"})
+ * })
  */
 class EmailEvent
 {

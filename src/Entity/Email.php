@@ -9,7 +9,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EmailRepository")
- * @ORM\Table(indexes={@ORM\Index(columns={"project_id", "message_id"})})
+ * @ORM\Table(indexes={
+ *     @ORM\Index(columns={"project_id", "message_id"}),
+ *     @ORM\Index(name="idx_email_timestamp", columns={"timestamp"})
+ * })
  */
 class Email
 {
@@ -36,6 +39,31 @@ class Email
      * @Groups("full")
      */
     private $messageId;
+
+    /**
+     * SES `ses:configuration-set` tag. Only present when the message was published
+     * through a configuration set.
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups("full")
+     */
+    private $configurationSet;
+
+    /**
+     * SES `ses:source-ip` tag.
+     *
+     * @ORM\Column(type="string", length=45, nullable=true)
+     * @Groups("full")
+     */
+    private $sourceIp;
+
+    /**
+     * SES `ses:from-domain` tag.
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups("full")
+     */
+    private $fromDomain;
 
     /**
      * @ORM\Column(type="json")
@@ -116,6 +144,42 @@ class Email
     public function setMessageId(string $messageId): self
     {
         $this->messageId = $messageId;
+
+        return $this;
+    }
+
+    public function getConfigurationSet(): ?string
+    {
+        return $this->configurationSet;
+    }
+
+    public function setConfigurationSet(?string $configurationSet): self
+    {
+        $this->configurationSet = $configurationSet;
+
+        return $this;
+    }
+
+    public function getSourceIp(): ?string
+    {
+        return $this->sourceIp;
+    }
+
+    public function setSourceIp(?string $sourceIp): self
+    {
+        $this->sourceIp = $sourceIp;
+
+        return $this;
+    }
+
+    public function getFromDomain(): ?string
+    {
+        return $this->fromDomain;
+    }
+
+    public function setFromDomain(?string $fromDomain): self
+    {
+        $this->fromDomain = $fromDomain;
 
         return $this;
     }

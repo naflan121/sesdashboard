@@ -20,6 +20,18 @@
               <th>MessageId</th>
               <td>{{ emailDetails.messageId }}</td>
             </tr>
+            <tr v-if="emailDetails.configurationSet">
+              <th>Configuration Set</th>
+              <td>{{ emailDetails.configurationSet }}</td>
+            </tr>
+            <tr v-if="emailDetails.sourceIp">
+              <th>Source IP</th>
+              <td>{{ emailDetails.sourceIp }}</td>
+            </tr>
+            <tr v-if="emailDetails.fromDomain">
+              <th>From Domain</th>
+              <td>{{ emailDetails.fromDomain }}</td>
+            </tr>
             <tr>
               <th>Destination</th>
               <td>{{ emailDetails.destination.join(', ') }}</td>
