@@ -28,3 +28,9 @@ docker-compose.override.yml
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+
+###> local working context ###
+# Private working notes and project context. Never published.
+/.claude/
+/CLAUDE.md
+###< local working context ###

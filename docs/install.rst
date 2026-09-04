@@ -28,6 +28,13 @@ $ make init
 
 * Go to http://your-ip/login or http://localhost/login
 
+The webserver binds to port 80 by default. To use a different host port, set
+``NGINX_HOST_PORT`` in your environment or in ``.env`` before running ``make up``:
+
+::
+
+$ NGINX_HOST_PORT=8080 make up
+
 Shared hosting installation
 ---------------------------
 

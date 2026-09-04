@@ -67,3 +67,25 @@ Configuration
 .. image:: /images/create-subscription.png
 
 .. image:: /images/webhook.png
+
+3. Verifying the SNS signature (optional)
+-----------------------------------------
+
+By default the only thing protecting the webhook is the random token in its URL. Amazon
+signs every notification, and SesDashboard can check that signature so forged requests are
+rejected even if the token leaks.
+
+The signature travels in the SNS envelope, so it is **only available when the subscription
+has "Enable raw message delivery" switched off**. SesDashboard accepts both delivery modes
+— with raw delivery the SES event arrives directly, without it the event arrives wrapped in
+the envelope and is unwrapped automatically.
+
+To turn verification on, create the subscription *without* raw message delivery and set in
+``.env.local``:
+
+::
+
+SNS_VERIFY_SIGNATURE=true
+
+Requests that are not signed envelopes are left alone, so enabling this on an install that
+uses raw delivery has no effect — switch the subscription over first.
