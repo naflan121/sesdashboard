@@ -29,9 +29,9 @@
   {% endif %}
 
   <label for="inputEmail" class="sr-only">Email address</label>
-  <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+  <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" placeholder="Email address" autocomplete="username" required autofocus>
   <label for="inputPassword" class="sr-only">Password</label>
-  <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+  <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" autocomplete="current-password" required>
 
   {#
       Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
