@@ -82,6 +82,25 @@ class WebHookProcessorTest extends TestCase
         $this->assertSame('example.com', $email->getFromDomain(), 'Tags should be backfilled from later events');
     }
 
+    /**
+     * SES publishes rendering failures as "RenderingFailure" (no space). Matching only
+     * the spaced spelling meant those events were rejected and dropped by SNS.
+     */
+    public function testRenderingFailureEventType()
+    {
+        foreach (['RenderingFailure', 'Rendering Failure'] as $type) {
+            $email = new Email();
+            $payload = $this->mailPayload();
+            $payload['eventType'] = $type;
+            $payload['failure'] = ['errorMessage' => 'template missing'];
+
+            $event = (new WebHookProcessor())->createEvent($email, $payload);
+
+            $this->assertSame(EmailEvent::EVENT_FAILURE, $event->getEvent(), $type . ' should map to the failure event');
+            $this->assertSame(Email::EMAIL_STATUS_NOT_DELIVERED, $email->getStatus(), $type . ' should mark the email undelivered');
+        }
+    }
+
     private function mailPayload(): array
     {
         return [

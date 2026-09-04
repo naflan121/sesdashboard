@@ -62,10 +62,12 @@ class WebHookProcessor
 
     public function createEmailEventFromJson(Email $email, $jsonData, $event): EmailEvent
     {
-        $type = self::getEventType($jsonData);
-
+        // Store the canonical event name the caller resolved, not the raw SES type.
+        // They match for every type except rendering failures, which SES calls
+        // "RenderingFailure" and which we record as EmailEvent::EVENT_FAILURE — the name
+        // DashboardStatsHelper and the activity filter both look for.
         $emailEvent = (new EmailEvent($email))
-            ->setEvent($type)
+            ->setEvent($event)
             ->setEventData($jsonData[$event] ?? []);
 
         if (!empty($jsonData[$event]['timestamp'])) {
@@ -118,6 +120,9 @@ class WebHookProcessor
                 $emailEvent = $this->createEmailEventFromJson($email, $jsonData, EmailEvent::EVENT_COMPLAINT);
                 break;
 
+            // SES publishes this as "RenderingFailure"; the spaced spelling is kept for
+            // any payload shape that used it.
+            case 'RenderingFailure':
             case 'Rendering Failure':
                 $email->setStatus(Email::EMAIL_STATUS_NOT_DELIVERED);
                 $emailEvent = $this->createEmailEventFromJson($email, $jsonData, EmailEvent::EVENT_FAILURE);
